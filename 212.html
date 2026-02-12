@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Earth Online 2026.2.12</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(180deg, #f0f7ff 0%, #e0eafc 100%);
+            --text-main: #262626;
+            --glass: rgba(255, 255, 255, 0.7);
+            --font-family: "FangSong_GB2312", "FangSong", "仿宋", "STFangsong", serif;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #f0f7ff; }
+
+        /* 方案 C 初始交互层 */
+        #init-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #f0f7ff;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: var(--font-family);
+        }
+
+        .rain-drop-trigger {
+            width: 40px;
+            height: 40px;
+            background: #7799bb;
+            border-radius: 0% 100% 100% 100%;
+            transform: rotate(45deg);
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(119, 153, 187, 0.4);
+            animation: float 3s ease-in-out infinite;
+            position: relative;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: rotate(45deg) translateY(0); }
+            50% { transform: rotate(45deg) translateY(-15px); }
+        }
+
+        .hint-text {
+            margin-top: 50px;
+            font-size: 15px;
+            color: #5d7a99;
+            letter-spacing: 3px;
+            opacity: 0.8;
+            text-align: center;
+            line-height: 2;
+        }
+
+        /* 主体内容 */
+        #main-content {
+            opacity: 0;
+            height: 100vh;
+            overflow-y: auto;
+            background: var(--bg-gradient);
+            transition: opacity 2s ease;
+        }
+
+        #rainCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        
+        .container { 
+            width: 100%; max-width: 430px; margin: 0 auto; 
+            padding: calc(env(safe-area-inset-top) + 40px) 25px 120px; 
+            position: relative; z-index: 1; 
+        }
+
+        header { margin-bottom: 40px; }
+        h1 { font-size: 24px; font-weight: bold; margin: 0; letter-spacing: 2px; }
+        .version-info { font-size: 12px; margin-top: 10px; color: #5d7a99; letter-spacing: 1.5px; }
+
+        section { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); 
+            border-radius: 4px; padding: 25px 20px; margin-bottom: 25px; 
+            border: 1px solid rgba(255, 255, 255, 0.5); line-height: 1.9; 
+        }
+
+        .section-title { font-size: 15px; font-weight: bold; display: block; margin-bottom: 18px; border-left: 3px solid #7799bb; padding-left: 12px; }
+        .bold { font-weight: bold; color: #000; }
+        
+        .task-box { padding: 15px 0; margin: 15px 0; border-top: 0.5px solid rgba(0,0,0,0.05); border-bottom: 0.5px solid rgba(0,0,0,0.05); }
+        .alert-area { font-size: 13px; color: #6a7d91; padding: 20px; margin-top: 40px; background: rgba(255, 255, 255, 0.3); border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.5); }
+        .footer-letter { margin-top: 50px; padding-bottom: 100px; font-size: 15px; line-height: 2.1; color: #334455; }
+        
+        .footer-action { position: fixed; bottom: 30px; left: 25px; right: 25px; z-index: 10; }
+        .load-btn { 
+            background: #262626; color: #fff; border: none; width: 100%; height: 54px; 
+            border-radius: 2px; font-family: var(--font-family); font-size: 14px; 
+            font-weight: bold; letter-spacing: 3px; 
+        }
+    </style>
+</head>
+<body>
+
+<div id="init-overlay">
+    <div class="rain-drop-trigger" id="trigger"></div>
+    <div class="hint-text">
+        雨落时<br>
+        愿望就会抵达
+    </div>
+</div>
+
+<div id="main-content">
+    <canvas id="rainCanvas"></canvas>
+    <div class="container">
+        <header>
+            <h1>亲爱的玩家 郑雪婷：</h1>
+            <div class="version-info">EARTH ONLINE / LOADING VERSION 2026.2.12</div>
+        </header>
+
+        <section>
+            <span class="section-title">2026.2.12 版本更新日志</span>
+            <div class="content">
+                <span class="bold">■ 主线任务优化</span><br>
+                原碎片式任务“活着”已整合为开放式主线：
+                <div class="task-box">
+                    <span class="bold">在不违反法律和道德的前提下，自由愉快地享受人生。</span>
+                </div>
+                本任务无强制目标、无固定路径、无截止日期。您有权随时更换职业、重置技能点、甚至躺平挂机。
+            </div>
+        </section>
+
+        <section>
+            <span class="section-title">三大核心补丁</span>
+            <div class="content">
+                <div style="margin-bottom:18px">
+                    <span class="bold">1. 身体引擎维护</span><br>
+                    · <span class="bold">睡眠模块</span>优先级已调至最高<br>
+                    · 运动系统建议每周启动 3-5 次，低强度即可生效<br>
+                    · 饮食 UI 更新：绿色蔬菜显示为高亮
+                </div>
+                <div style="margin-bottom:18px">
+                    <span class="bold">2. 精神世界扩容</span><br>
+                    · 背包新增“书籍 / 音乐 / 风景”分类，不占负重<br>
+                    · 允许悲伤，允许放空，允许 <span class="bold">“我今天不想努力”</span>
+                </div>
+                <div>
+                    <span class="bold">3. NPC 交互机制调整</span><br>
+                    · 取消强制好感度任务<br>
+                    · 您有权长按头像选择 <span class="bold">“减少往来”</span><br>
+                    · 请率先完成自己的主线任务——<span class="bold">您是自己唯一的常驻角色</span>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <span class="section-title">生日登录礼包</span>
+            <div class="content">
+                · 7 日晴空体验卡 (视天气系统差异而定)<br>
+                · 亲友团聚 / 独自清欢双模式自由切换权<br>
+                · <span class="bold">“此刻心安” × 1 份</span>
+            </div>
+        </section>
+
+        <div class="alert-area">
+            <span class="bold">⚠️ 防沉迷提示</span><br>
+            本版本暂未开放替身系统。您无法代替他人受苦，也无需代替他人通关。请优先照顾您自己的体力条与心情值。
+        </div>
+
+        <div class="footer-letter">
+            🌍 <span class="bold">最后，一封来自系统后台的信：</span><br><br>
+            你在 2025 年某个深夜许下的愿望系统收到了。<br>
+            它不是马上兑现，但它没有忘记。<br><br>
+            <span class="bold">现在的你，正在领取那份延迟发货的礼物。</span><br>
+            祝您游戏愉快，生活顺利。
+        </div>
+    </div>
+
+    <div class="footer-action">
+        <button class="load-btn" onclick="this.innerText='SYSTEM ACTIVATED';">START VERSION 2.12</button>
+    </div>
+</div>
+
+<script>
+    // 方案 C 交互逻辑
+    const trigger = document.getElementById('trigger');
+    const overlay = document.getElementById('init-overlay');
+    const mainContent = document.getElementById('main-content');
+
+    trigger.onclick = function() {
+        // 缩小并消失的动画
+        trigger.style.transform = 'rotate(45deg) scale(0)';
+        trigger.style.transition = 'all 0.5s ease';
+        
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            mainContent.style.opacity = '1';
+            
+            // 震动反馈
+            if (window.navigator.vibrate) window.navigator.vibrate(20);
+            
+            setTimeout(() => { 
+                overlay.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }, 1200);
+        }, 500);
+    };
+
+    // 下雨逻辑
+    const canvas = document.getElementById('rainCanvas');
+    const ctx = canvas.getContext('2d');
+    let width, height, drops = [];
+
+    function initCanvas() {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+    }
+
+    class Drop {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * -height;
+            this.vy = Math.random() * 4 + 4;
+            this.len = Math.random() * 20 + 10;
+            this.opacity = Math.random() * 0.3 + 0.1;
+        }
+        draw() {
+            ctx.strokeStyle = `rgba(174, 194, 224, ${this.opacity})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x, this.y + this.len);
+            ctx.stroke();
+        }
+        update() {
+            this.y += this.vy;
+            if (this.y > height) this.reset();
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        drops.forEach(d => { d.update(); d.draw(); });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', initCanvas);
+    initCanvas();
+    for (let i = 0; i < 100; i++) drops.push(new Drop());
+    animate();
+</script>
+
+</body>
+</html>
